@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>ClockImage</title>
+    <meta charset="utf-8">
+    <style>
+    body {
+        margin: 0;
+        text-align: center;
+    }
+
+    img{
+        display: none;
+    }
+
+    canvas {
+        /*border: 1px solid black;*/
+        background-color: whitesmoke;
+    }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="clockView" width="600" height="600"></canvas>
+
+    <img id="clockimage" onload="start()" src="/home/wiley/clockwork/images/clockface_numbers01.gif">
+
+    <p id="label">Clockview</p>
+    <button type="button" onclick="increment()" id="incrementBtn">Push Time by</button>
+    <button type="button" onclick="deIncrement()" id="deIncrementBtn">Pull Time by</button>
+    <select id="select" name="select1" onchange="slctChange(this.id)">
+        <option value="1hr">One Hour</option>
+        <option value="30min">Half Hour</option>
+        <option value="15min">15 Minutes</option>
+    </select>
+    <script src="scripts/clockimage.js"></script>
+</body>
+
+</html>
