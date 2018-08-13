@@ -85,7 +85,7 @@ function Slice(sTime, duration, color) {
     };
 
     this.check = function() {
-        if(c.isPointInPath(mouse.x, mouse.y)) {
+        if(c.isPointInPath(Math.floor(mouse.x - (window.innerWidth/2) + (canvas.width/2)), mouse.y)) {
             console.log("The mouse is in the arc");
             return true;
         } else {
@@ -182,10 +182,11 @@ function animate() {
     updateTimes();
     drawAll();
     showMouseInfo();
+    label.innerHTML = "Relative:" + Math.floor(mouse.x - (window.innerWidth/2) + (canvas.width/2)) + "," + mouse.y +
+    " Absolute:" + mouse.x + "," + mouse.y;
 }
 
 function start() {
     animate();
 }
-label.innerHTML = x + "," + y;
 animate();
