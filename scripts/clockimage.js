@@ -7,12 +7,6 @@ var c = canvas.getContext('2d');
 var img = document.getElementById('clockimage');
 var label = document.getElementById('label');
 
-// var colorArray = [
-//     'rgba(255, 0, 0, 0.5)',
-//     'rgba(0, 255, 0, 0.5)',
-//     'rgba(0, 0, 255, 0.5)'
-// ];
-
 // MOUSE DEFINITIONS
 // Mouse struct.
 var mouse = {
@@ -28,20 +22,34 @@ window.addEventListener('mousemove',
     }
 );
 
-function showMouseInfo() {
-    console.log(mouse.x + "," + mouse.y);
-}
-
 
 // COLOR DEFINITIONS
-// function RgbaColor(r,g,b,a) {
-    //comment
-// }
+function rgbaColor(r,g,b,a) {
+        return('rgba(' + r + ',' + g + ',' + b + ',' + a + ')');
+}
 
-// function draw() {
-//     drawClockImg();
-//     updateTime();
-// }
+function Color(r,g,b,a) {
+    this.r = r;
+    this.g = g;
+    this.b = b;
+    this.a = a;
+    this.asString = function() {
+        return(rgbaColor(this.r, this.g, this.b, this.a));
+    }
+}
+
+function Colors() {
+    this.makeRed = function() {
+        return(new Color(255,0,0,0));
+    }
+    this.makeGreen = function() {
+        return(new Color(0,255,0,0));
+    }
+    this.makeBlue = function() {
+        return(new Color(0,0,255,0));
+    }
+}
+Colors = new Colors();
 
 
 // LOCATION DEFINITIONS
@@ -65,41 +73,7 @@ var min15 = Math.PI/24;
 changeTime = oneHour;
 
 
-// OBJECTS
-// Slice object.
-function Slice(sTime, duration, color) {
-    this.sTime = sTime;
-    this.duration = duration;
-    this.color = color;
-
-    this.draw = function() {
-        c.beginPath();
-        c.moveTo(x, y);
-        c.arc(x,y, circleRadius-1, this.sTime, this.sTime + duration, false);
-        c.fillStyle = this.color;
-        c.fill();
-    };
-
-    this.updateStart = function(newStart){
-        this.sTime = newStart;
-    };
-
-    this.check = function() {
-        if(c.isPointInPath(Math.floor(mouse.x - (window.innerWidth/2) + (canvas.width/2)), mouse.y)) {
-            console.log("The mouse is in the arc");
-            return true;
-        } else {
-            console.log("The mouse is NOT in the arc");
-            return false;
-        }
-    };
-}
-
-// TESTING DEFINITION
-var startTime = nine;
-var slice = new Slice(startTime, oneHour*2, 'rgba(0, 255, 0, 0.5)');
-
-
+// PRIMARY FUNCTIONALITY
 function updateTimes() {
     //will become iterable.
     slice.updateStart(startTime);
@@ -116,20 +90,22 @@ function drawClockImg() {
     c.drawImage(img, 0, 0, canvasWidth, canvasHeight);
 }
 
-flag = false;
+var inSlice = false;
+var mouseInSlice = -1;
 function drawSlices() {
-    slice.draw();
-    if(slice.check()) {
-        //label.innerHTML = "mouse is in arc";
-        slice.color = 'rgba(0, 255, 0, 0.7)';
-        canvas.style.cursor = 'pointer';
-        if(!flag){
-            console.log("Made it this far"); flag = true;}
-    } else {
-        //label.innerHTML = "mouse NOT in arc";
-        slice.color = 'rgba(0, 255, 0, 0.5)'
-        canvas.style.cursor = 'default';
-        flag = false;
+    for(i=0;i<sliceArray.length;i++) {
+        sliceArray[i].draw();
+        if(sliceArray[i].check()) {
+            sliceArray[i].color.a = 0.7;
+            canvas.style.cursor = 'pointer';
+            mouseInSlice = i;
+            inSlice = i;
+        } else {
+            sliceArray[i].color.a = 0.5;
+            if(mouseInSlice == i) {
+                canvas.style.cursor = 'default';
+            }
+        }
     }
 
 }
@@ -176,14 +152,84 @@ function slctChange(selectid) {
     }
 }
 
+var newCol = Colors.makeRed();
+function newSlctChange(selectid) {
+    var slct = document.getElementById(selectid);
+    var selected = slct[slct.selectedIndex].value;
+
+    // var incText = document.getElementById('incrementBtn');
+    // var decText = document.getElementById('deIncrementBtn');
+
+    if (selected == "red") {
+        newCol = Colors.makeRed();
+    } else if (selected == "green"){
+        newCol = Colors.makeGreen();
+    } else {
+        newCol = Colors.makeBlue();
+    }
+}
+
+function newBtn() {
+    var addSlice = newSlice(startTime, oneHour, newCol);
+}
+
+
+// OBJECTS
+// Slice object.
+function Slice(sTime, duration, color) {
+    this.sTime = sTime;
+    this.duration = duration;
+    this.color = color;
+    this.id = "honeybadger";//sliceArray.length;
+    this.selected = false;
+
+    this.draw = function() {
+        c.beginPath();
+        c.moveTo(x, y);
+        c.arc(x,y, circleRadius-1, this.sTime, this.sTime + duration, false);
+        c.fillStyle = this.color.asString();
+        // if(this.selected){c.fillStyle = this.color;}
+        // else {c.fillStyle = this.color;}
+        c.fill();
+    };
+
+    this.updateStart = function(newStart){
+        this.sTime = newStart;
+    };
+
+    this.check = function() {
+        if(c.isPointInPath(Math.floor(mouse.x - (window.innerWidth/2) + (canvas.width/2)), mouse.y)) {
+            console.log("The mouse is in the arc");
+            return true;
+        } else {
+            console.log("The mouse is NOT in the arc");
+            return false;
+        }
+    };
+}
+
+function newSlice(sTime, duration, color) {
+    var newSlice = new Slice(sTime, duration, color);
+    sliceArray.push(newSlice);
+    return newSlice;
+}
+
+// SLICE ARRAY
+var sliceArray = [];
+
+// TESTING DEFINITION
+var startTime = nine;
+var slice = newSlice(startTime, oneHour*2, Colors.makeBlue());
+
+
 // ANIMATION FUNCTION.
 function animate() {
     requestAnimationFrame(animate);
     updateTimes();
     drawAll();
-    showMouseInfo();
+    // showMouseInfo();
     label.innerHTML = "Relative:" + Math.floor(mouse.x - (window.innerWidth/2) + (canvas.width/2)) + "," + mouse.y +
-    " Absolute:" + mouse.x + "," + mouse.y;
+    " Absolute:" + mouse.x + "," + mouse.y + " Id selected: " + mouseInSlice;
 }
 
 function start() {
