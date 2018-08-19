@@ -27,7 +27,9 @@ window.addEventListener('mousemove',
 window.addEventListener('click',
     function(event) {
         if(mouseInCanvas() && mouseInSlice != -1) {
-            alert("You clicked on slice " + inSlice + "!");
+            sliceSelected = mouseInSlice;
+            modalText.innerHTML = "You selected slice: " + sliceSelected;
+            //openModal();
         }
     }
 );
@@ -95,13 +97,13 @@ var min15 = Math.PI/24;
 
 changeTime = oneHour;
 
-var timeInDecimal = 0
-function timeInDec() {
-    timeInDecimal = ((Math.PI/2 + startTime)/(Math.PI/6)).toFixed(2);
-    if(timeInDecimal > 12) {
-        timeInDecimal -= 12;
-    }
-}
+// var timeInDecimal = 0
+// function timeInDec() {
+//     timeInDecimal = ((Math.PI/2 + startTime)/(Math.PI/6)).toFixed(2);
+//     if(timeInDecimal > 12) {
+//         timeInDecimal -= 12;
+//     }
+// }
 
 
 // OBJECTS
@@ -111,7 +113,7 @@ function Slice(sTime, duration, color) {
     this.duration = duration;
     this.color = color;
     this.id = sliceArray.length;
-    this.selected = false;
+    this.timeInDec = 
 
     this.draw = function() {
         c.beginPath();
@@ -149,6 +151,14 @@ function Slice(sTime, duration, color) {
             console.log("manipulated time too low");
         }
     }
+
+    this.timeInDec = function() {
+        var timeInDecimal = ((Math.PI/2 + this.sTime)/(Math.PI/6)).toFixed(2);
+        if(timeInDecimal > 12) {
+            timeInDecimal -= 12;
+        }
+        return(timeInDecimal);
+    }
 }
 
 function newSlice(sTime, duration, color) {
@@ -162,11 +172,13 @@ var sliceArray = [];
 
 
 // PRIMARY FUNCTIONALITY
-function updateTimes() {
-    //will become iterable.
-    slice.updateStart(startTime);
-    timeInDec();
-}
+// function updateTimes() {
+//     for(i=0;i<sliceArray.length;i++) {
+//         sliceArray[i].updateStart()
+//     }
+//     slice.updateStart(startTime);
+//     timeInDec();
+// }
 
 function drawAll() {
     c.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -184,6 +196,7 @@ function drawClockImg() {
 //***************************************************************
 var inSlice = false;
 var mouseInSlice = -1;
+var sliceSelected = -1;
 function drawSlices() {
     for(i=0;i<sliceArray.length;i++) {
         sliceArray[i].timeManage();
@@ -224,12 +237,12 @@ function drawLast() {
 
 // CONTROL BUTTONS
 function increment() {
-    startTime += changeTime;
+    sliceArray[sliceSelected].sTime += changeTime;
     console.log("incremented");
 }
 
 function deIncrement() {
-    startTime -= changeTime;
+    sliceArray[sliceSelected].sTime -= changeTime;
     console.log("de-incremented");
 }
 
@@ -279,18 +292,42 @@ function delBtn() {
 
 // TESTING DEFINITION
 var startTime = nine;
-var slice = newSlice(startTime - min15*1, min15 * 0.1, Colors.makeRed());
+var slice = newSlice((startTime), min15*0.2, Colors.makeRed());
+
+
+//MODAL STUFF
+var modal = document.getElementById('myModal');
+var modalBtn = document.getElementById("myBtn");
+var modalSpan = document.getElementsByClassName("close")[0];
+var modalText = document.getElementById('modalText');
+
+// When the user clicks on the button, open the modal
+function openModal() {
+    modal.style.display = "block";
+}
+
+// When the user clicks on <span> (x), close the modal
+function closeModal() {
+    modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+    if (event.target == modal) {
+        closeModal();
+    }
+} 
 
 
 // ANIMATION FUNCTION.
 function animate() {
     requestAnimationFrame(animate);
     //mouseInCanvas();
-    updateTimes();
+    //updateTimes();
     drawAll();
     // showMouseInfo();
     label.innerHTML = "Relative:" + mouse.relX + "," + mouse.y +
-    " Absolute:" + mouse.x + "," + mouse.y + " Id selected: " + timeInDecimal;
+    " Absolute:" + mouse.x + "," + mouse.y + " Id selected: " + sliceSelected;
 }
 
 function start() {
